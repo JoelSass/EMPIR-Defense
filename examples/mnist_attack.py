@@ -34,6 +34,7 @@ ATTACK_JSMA = 1
 ATTACK_FGSM = 2
 ATTACK_MADRYETAL = 3
 ATTACK_BASICITER = 4
+ATTACK_MYATTACK = 5
 
 # enum adversarial training types
 ADVERSARIAL_TRAINING_MADRYETAL = 1
@@ -174,7 +175,7 @@ def mnist_attack(train_start=0, train_end=60000, test_start=0,
        if fixedPrec == 1:
            from cleverhans_tutorials.tutorial_models import make_ensemble_three_cnn
            model = make_ensemble_three_cnn(
-               phase, logits_scalar, 'lp1_', 'lp2_', 'fp_', wbits, abits, wbits2, abits2, nb_filters=nb_filters) 
+               phase, logits_scalar, 'lp1_', 'lp2_', 'fp_', wbits, abits, wbits2, abits2, nb_filters=nb_filters)
        else:
            from cleverhans_tutorials.tutorial_models import make_layerwise_three_combined_cnn
            model = make_layerwise_three_combined_cnn(
@@ -459,6 +460,14 @@ def mnist_attack(train_start=0, train_end=60000, test_start=0,
         from cleverhans.attacks import BasicIterativeMethod
         attacker = BasicIterativeMethod(model, back='tf', model_type=model_type, num_classes=nb_classes, sess=sess)
         attack_params = {'eps': eps, 'eps_iter': 0.01, 'nb_iter': nb_iter}
+    elif attack == ATTACK_MYATTACK:
+        print('Attack: MyAttack')
+        from cleverhans.attacks import ProjectedGradientDescent
+        # Define error function as average of the three models in the ensemble
+        print(model.get_layer_names())
+        print(model.get_layer(x,None,'combinedAvgCorrectProb').eval(feed_dict={x: X_test[:1], phase: False}, session=sess))
+        
+        exit()
     else:
         print("Attack undefined")
         sys.exit(1)
